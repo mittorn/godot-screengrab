@@ -16,7 +16,10 @@ void XPos(Window win, int *x, int *y, int *width, int *height)
 	Window root;
 	Window *tree;
 	Window nwin = win;
+	gLastXError = 0;
 	XGetWindowAttributes(gDisplay, win, &attr);
+	if(gLastXError)
+		return;
 	xx = attr.x;
 	yy = attr.y;
 	*width = attr.width;
@@ -45,6 +48,8 @@ void window_activate(Window w, unsigned int flags, int x, int y)
 	XEvent event;
 	last_window = w;
 	XPos(w, &last_x_root, &last_y_root, &last_width, &last_height);
+	if(gLastXError)
+		return;
 	if(flags & ACTIVATE_FOCUS)
 	{
 		memset (&event, 0, sizeof (event));
@@ -94,7 +99,7 @@ void pointer_move(Window w, int x, int y, int x_root, int y_root)
 	event.xmotion.y_root = y_root + y;
 	event.xmotion.root = gRoot;
 	event.xmotion.state = state;//0xFFFF;
-	printf("move %x %d %d\n", state, x, y);
+	//printf("move %x %d %d\n", state, x, y);
 	if (XSendEvent (dpy, event.xmotion.window, True, state*0?ButtonMotionMask:PointerMotionMask, &event) == 0)
 		fprintf (stderr, "Error to send the event!\n");
 	XFlush (dpy);
@@ -117,7 +122,7 @@ void update_button(Window w, int x, int y, int x_root, int y_root, int button, i
 	event.xbutton.state =state;// 0xFFFF;//0xFFFF;
 	event.type = b? ButtonPress : ButtonRelease;
 	unsigned int mask = b?ButtonPressMask : ButtonReleaseMask;
-	printf("button %x %d %d\n", state, button, b);
+	//printf("button %x %d %d\n", state, button, b);
 	if (XSendEvent (dpy, event.xbutton.window, True, mask, &event) == 0)
 		fprintf (stderr, "Error to send the event!\n");
 	XFlush (dpy);
@@ -129,8 +134,10 @@ int clickWindowAt( Window w, int flags,
 {
 	Display *dpy = gDisplay;
     XWindowAttributes attrs;
+    gLastXError = 0;
     XGetWindowAttributes( dpy, w, &attrs );
-
+	if(gLastXError)
+		return 0;
     if ( attrs.map_state == IsViewable &&
          1 ) {//atts.width >= minSize && atts.height >= minSize ) {
         int x = 0, y = 0;
@@ -216,15 +223,17 @@ int clickWindowAt( Window w, int flags,
 
 void xsend_window_activate(Window w, unsigned int flags, int x, int y)
 {
-	window_activate(w, flags, x, y);
+	if(w)window_activate(w, flags, x, y);
 }
 void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y )
 {
-	clickWindowAt(w, flags, x, y, 0,  state,  0, 0);
+	if(w)clickWindowAt(w, flags, x, y, 0,  state,  0, 0);
 }
 #include <X11/XKBlib.h>
 void xsend_window_keyboard(Window w, unsigned long keyCode, int press, unsigned int state)
 {
+	if(!w)
+		return;
       XEvent ev;
       ev.xkey.type = press?KeyPress:KeyRelease;
       ev.xkey.window = w;

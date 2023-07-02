@@ -3,6 +3,8 @@
 extern Display *gDisplay;
 extern int gScreen;
 extern Window gRoot;
+extern int gLastXError;
+extern int gLastXErrorReq;
 struct compwindow_data
 {
 Window w;
@@ -10,6 +12,7 @@ unsigned long glxpixmap;
 Pixmap pixmap;
 int x, y, width, height;
 int last_texture;
+
 };
 #ifdef __cplusplus
 extern "C" {

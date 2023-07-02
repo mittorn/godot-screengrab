@@ -80,6 +80,7 @@ int xcomp_window_atom_str(xcb_window_t win, xcb_atom_t atom, char *str, int maxl
 	// WM_CLASS is formatted differently from other strings, it's two null terminated strings.
 	// Since we want the first one, let's just let copy run strlen.
 	strncpy(str,(const char *)xcb_get_property_value(cls), maxlen - 1 );
+	str[maxlen - 1] = 0;
 	free(cls);
 	return 0;
 }
@@ -193,6 +194,11 @@ void xcomp_init_display(void)
 int xcomp_register_window(struct compwindow_data *data, const char *cname, int index)
 {
 	data->w = xcomp_find_top_level_window(ATOM_WM_CLASS, cname, index);
+	if(!data->w)
+	{
+		strcpy(data->title, "No window");
+		return 0;
+	}
     int win_h, win_w, win_d;
     xcb_generic_error_t *err = NULL, *err2 = NULL;
     xcb_get_geometry_cookie_t gg_cookie = xcb_get_geometry(connection, data->w);
@@ -208,8 +214,12 @@ int xcomp_register_window(struct compwindow_data *data, const char *cname, int i
             fprintf(stderr, "get geometry: XCB error %d\n", err->error_code);
             free(err);
         }
+		if(!data->w)
+			strcpy(data->title, "Bad window");
         return data->w = 0;
     }
+    strcpy(data->title, "unknown");
+    xcomp_window_atom_str(data->w, ATOM__NET_WM_NAME, data->title, 255 );
 	return (int)data->w;
 }
 static const int pixmap_config[] = {GLX_BIND_TO_TEXTURE_RGBA_EXT,

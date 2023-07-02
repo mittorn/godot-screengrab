@@ -22,6 +22,7 @@ public:
 		godot::register_method("window_activate", &CompWindow::window_activate);
 		godot::register_method("window_update_mouse", &CompWindow::window_update_mouse);
 		godot::register_method("set_key_state", &CompWindow::set_key_state);
+		godot::register_method("get_window_title", &CompWindow::get_window_title);
 		xcomp_init_display();
 	}
 
@@ -34,6 +35,7 @@ public:
 	int get_y() const { return data.y;}
 	void update_texture(int id) { xcomp_update_texture(&data, id);}
 	int get_id() const {return data.w;}
+	godot::String get_window_title() const {return (const char*)data.title;}
 	void window_activate(unsigned int flags, int x, int y) { xsend_window_activate(data.w, flags, x, y);}
 	void window_update_mouse(unsigned int state, int flags,  int x, int y) { xsend_window_mouse(data.w, state, flags, x, y);}
 	void set_key_state(const godot::String keyName, int pressed, unsigned int state){ xsend_window_keyboard(data.w, lookupKeycode(keyName.utf8().get_data()), pressed, state);}

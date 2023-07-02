@@ -12,7 +12,7 @@ unsigned long glxpixmap;
 Pixmap pixmap;
 int x, y, width, height;
 int last_texture;
-
+char title[256];
 };
 #ifdef __cplusplus
 extern "C" {

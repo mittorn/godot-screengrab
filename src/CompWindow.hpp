@@ -35,8 +35,8 @@ public:
 	void update_texture(int id) { xcomp_update_texture(&data, id);}
 	int get_id() const {return data.w;}
 	void window_activate(unsigned int flags, int x, int y) { xsend_window_activate(data.w, flags, x, y);}
-	void window_update_mouse(unsigned int buttons, int flags,  int x, int y) { xsend_window_mouse(data.w, buttons, flags, x, y);}
-	void set_key_state(const godot::String keyName, int pressed){ xsend_window_keyboard(data.w, lookupKeycode(keyName.utf8().get_data()), pressed);}
+	void window_update_mouse(unsigned int state, int flags,  int x, int y) { xsend_window_mouse(data.w, state, flags, x, y);}
+	void set_key_state(const godot::String keyName, int pressed, unsigned int state){ xsend_window_keyboard(data.w, lookupKeycode(keyName.utf8().get_data()), pressed, state);}
 
 private:
 	compwindow_data data;

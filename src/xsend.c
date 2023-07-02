@@ -186,8 +186,8 @@ int clickWindowAt( Window w, int flags,
 //	update_button(dpy, w, x, y, x_root, y_root, button, b);
 	if(new_state != 0xFF00)
 	{
-	unsigned int bstate = state >> 8;
-	unsigned int nstate = new_state >> 8;
+	unsigned int bstate = (state & 0x1F00) >> 8;
+	unsigned int nstate = (new_state & 0x1f00) >> 8;
 	unsigned int dstate = bstate ^ nstate;
 	unsigned int button = Button1;
 	while(dstate)
@@ -218,11 +218,12 @@ void xsend_window_activate(Window w, unsigned int flags, int x, int y)
 {
 	window_activate(w, flags, x, y);
 }
-void xsend_window_mouse(Window w, unsigned int buttons, unsigned int flags, int x, int y )
+void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y )
 {
-	clickWindowAt(w, flags, x, y, 0,  buttons << 8,  0, 0);
+	clickWindowAt(w, flags, x, y, 0,  state,  0, 0);
 }
-void xsend_window_keyboard(Window w, unsigned long keyCode, int press)
+#include <X11/XKBlib.h>
+void xsend_window_keyboard(Window w, unsigned long keyCode, int press, unsigned int state)
 {
       XEvent ev;
       ev.xkey.type = press?KeyPress:KeyRelease;
@@ -230,7 +231,9 @@ void xsend_window_keyboard(Window w, unsigned long keyCode, int press)
       ev.xkey.root = ev.xkey.subwindow = None;
       ev.xkey.time = 0;
       ev.xkey.x = ev.xkey.y = ev.xkey.x_root = ev.xkey.y_root = 0;
-      ev.xkey.state = 0;
+      XkbStateRec xkbState;
+      XkbGetState(gDisplay, XkbUseCoreKbd, &xkbState);
+      ev.xkey.state = state | xkbState.group << 13;
       ev.xkey.keycode = keyCode;
       ev.xkey.same_screen = True;
       XSendEvent(gDisplay, w, True, press?KeyPressMask:KeyReleaseMask, &ev);
@@ -256,6 +259,7 @@ int main (int argc, char *argv[])
 	}
 
 
+//    printf("%x\n", xkbState.group << 13);
 //	move(display, 500, 700);
 
 	window_activate(atoi(argv[1]), ACTIVATE_FOCUS|ACTIVATE_ENTER, atoi(argv[2]), atoi(argv[3]));

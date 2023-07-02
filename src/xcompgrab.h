@@ -19,8 +19,8 @@ void xcomp_init_display(void);
 int xcomp_register_window( struct compwindow_data *data, const char *cname, int index);
 void xcomp_update_texture(struct compwindow_data *data, int texture);
 void xsend_window_activate(Window w, unsigned int flags, int x, int y);
-void xsend_window_mouse(Window w, unsigned int buttons, unsigned int flags, int x, int y );
-void xsend_window_keyboard(Window w, unsigned long keyCode, int press);
+void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y );
+void xsend_window_keyboard(Window w, unsigned long keyCode, int press, unsigned int state);
 
 #ifdef __cplusplus
 }

@@ -54,6 +54,7 @@ elif platform == "linux":
         env.Append(CCFLAGS=["-fPIC", "-g3", "-Og"])
     else:
         env.Append(CCFLAGS=["-fPIC", "-g", "-O3"])
+    env.Append(LINKFLAGS=["-lX11", "-lGL", "-lXtst", "-lxcb", "-lxcb-composite", "-lX11-xcb", "-Wl,--no-undefined"])
 elif platform == "windows":
     # This makes sure to keep the session environment variables
     # on Windows, so that you can run scons in a VS 2017 prompt
@@ -76,7 +77,7 @@ SConscript("godot-cpp/SConstruct")
 
 def add_sources(sources, dir):
     for f in os.listdir(dir):
-        if f.endswith(".cpp"):
+        if f.endswith(".cpp") or f.endswith(".c"):
             sources.append(dir + "/" + f)
 
 

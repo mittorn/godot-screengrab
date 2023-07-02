@@ -19,6 +19,8 @@ public:
 	int get_w() const;
 	int get_h() const;
 	void update_texture(int) const;
+	void set_key_state(const godot::String keyName, int pressed) const;
+
 };
 
 #endif // SIMPLE_H

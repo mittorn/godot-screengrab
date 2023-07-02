@@ -1,4 +1,5 @@
 #include "ScreenGrab.hpp"
+#include "gdvk_util.h"
 #include <GLES3/gl3.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2ext.h>
@@ -10,6 +11,7 @@ void ScreenGrab::_register_methods() {
 	godot::register_method("update_texture", &ScreenGrab::update_texture);
 	godot::register_method("get_width", &ScreenGrab::get_w);
 	godot::register_method("get_height", &ScreenGrab::get_h);
+	godot::register_method("set_key_state", &ScreenGrab::set_key_state);
 }
 
 static Display *dpy;
@@ -188,4 +190,15 @@ void ScreenGrab::update_texture(int id) const {
 //	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
 
 //	XDestroyImage(img);
+}
+
+void ScreenGrab::set_key_state(const godot::String keyName, int pressed) const{
+	setKeyState(lookupKeycode(keyName.utf8().get_data()), pressed);
+}
+
+
+
+extern "C" void gprint(const char *str)
+{
+	godot::Godot::print(str);
 }

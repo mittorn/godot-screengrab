@@ -27,7 +27,7 @@ public:
 	}
 
 	void _init() {}
-	int register_window(godot::String cname, int index) { return xcomp_register_window( &data, cname.utf8().get_data(), index);}
+	int register_window(godot::String atom,godot::String value, int index) { return xcomp_register_window( &data, atom.utf8().get_data(),value.utf8().get_data(), index);}
 
 	int get_w() const { return data.width;}
 	int get_h() const { return data.height;}

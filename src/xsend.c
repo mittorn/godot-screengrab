@@ -14,7 +14,7 @@ void XPos(Window win, int *x, int *y, int *width, int *height)
 	int xx = 0, yy = 0;
 	unsigned int ntree;
 	Window root;
-	Window *tree;
+	Window *tree;;
 	Window nwin = win;
 	gLastXError = 0;
 	XGetWindowAttributes(gDisplay, win, &attr);
@@ -26,8 +26,11 @@ void XPos(Window win, int *x, int *y, int *width, int *height)
 	*height = attr.height;
 	do {
 		win = nwin;
+		tree = NULL;
 		XQueryTree(gDisplay, win, &root, &nwin, &tree, &ntree);
-		XFree(tree);
+		if(tree)
+			XFree(tree);
+		else return;
 		XGetWindowAttributes(gDisplay, nwin, &attr);
 		xx += attr.x;
 		yy += attr.y;
@@ -227,6 +230,10 @@ void xsend_window_activate(Window w, unsigned int flags, int x, int y)
 }
 void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y )
 {
+//	XUngrabKeyboard(gDisplay, CurrentTime);
+//	XUngrabPointer(gDisplay, CurrentTime);
+//	XUngrabServer(gDisplay);
+	
 	if(w)clickWindowAt(w, flags, x, y, 0,  state,  0, 0);
 }
 #include <X11/XKBlib.h>

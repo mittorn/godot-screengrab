@@ -19,7 +19,7 @@ extern "C" {
 #endif
 void gprint(const char *str);
 void xcomp_init_display(void);
-int xcomp_register_window( struct compwindow_data *data, const char *cname, int index);
+int xcomp_register_window( struct compwindow_data *data, const char *atom, const char *value, int index);
 void xcomp_update_texture(struct compwindow_data *data, int texture);
 void xsend_window_activate(Window w, unsigned int flags, int x, int y);
 void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y );

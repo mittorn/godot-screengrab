@@ -191,9 +191,12 @@ void xcomp_init_display(void)
 	gFbConfig = configs[0];
 	xcomp_gather_atoms();
 }
-int xcomp_register_window(struct compwindow_data *data, const char *cname, int index)
+int xcomp_register_window(struct compwindow_data *data, const char *atom, const char *value, int index)
 {
-	data->w = xcomp_find_top_level_window(ATOM_WM_CLASS, cname, index);
+	if(!atom[0])
+		data->w = atoi(value);
+	else
+		data->w = xcomp_find_top_level_window(get_atom(atom), value, index);
 	if(!data->w)
 	{
 		strcpy(data->title, "No window");

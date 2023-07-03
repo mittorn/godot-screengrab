@@ -224,21 +224,24 @@ int clickWindowAt( Window w, int flags,
 }
 
 
-void xsend_window_activate(Window w, unsigned int flags, int x, int y)
+void xsend_window_activate(struct compwindow_data *data, unsigned int flags, int x, int y)
 {
+	Window w = data->w;
 	if(w)window_activate(w, flags, x, y);
+	data->x = last_x_root;
+	data->y = last_y_root;
 }
-void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y )
+void xsend_window_mouse(struct compwindow_data *data, unsigned int state, unsigned int flags, int x, int y )
 {
-//	XUngrabKeyboard(gDisplay, CurrentTime);
-//	XUngrabPointer(gDisplay, CurrentTime);
-//	XUngrabServer(gDisplay);
-	
+	Window w = data->w;
 	if(w)clickWindowAt(w, flags, x, y, 0,  state,  0, 0);
+	data->x = last_x_root;
+	data->y = last_y_root;
 }
 #include <X11/XKBlib.h>
-void xsend_window_keyboard(Window w, unsigned long keyCode, int press, unsigned int state)
+void xsend_window_keyboard(struct compwindow_data *data, unsigned long keyCode, int press, unsigned int state)
 {
+	Window w = data->w;
 	if(!w)
 		return;
       XEvent ev;

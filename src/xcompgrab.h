@@ -21,9 +21,10 @@ void gprint(const char *str);
 void xcomp_init_display(void);
 int xcomp_register_window( struct compwindow_data *data, const char *atom, const char *value, int index);
 void xcomp_update_texture(struct compwindow_data *data, int texture);
-void xsend_window_activate(Window w, unsigned int flags, int x, int y);
-void xsend_window_mouse(Window w, unsigned int state, unsigned int flags, int x, int y );
-void xsend_window_keyboard(Window w, unsigned long keyCode, int press, unsigned int state);
+void xcomp_reset_texture(struct compwindow_data *data);
+void xsend_window_activate(struct compwindow_data *data, unsigned int flags, int x, int y);
+void xsend_window_mouse(struct compwindow_data *data, unsigned int state, unsigned int flags, int x, int y );
+void xsend_window_keyboard(struct compwindow_data *data, unsigned long keyCode, int press, unsigned int state);
 
 #ifdef __cplusplus
 }

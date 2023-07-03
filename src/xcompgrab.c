@@ -236,6 +236,18 @@ static const int pixmap_config[] = {GLX_BIND_TO_TEXTURE_RGBA_EXT,
                              GLX_Y_INVERTED_EXT,
                              GLX_DONT_CARE,
                              None};
+void xcomp_reset_texture(struct compwindow_data *data)
+{
+	glBindTexture(GL_TEXTURE_2D, data->last_texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	data->glxpixmap = 0;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	
+}
+
 
 void xcomp_update_texture(struct compwindow_data *data, int texture) {
 	fprintf(stderr, "%d\n", data->w);
@@ -245,14 +257,7 @@ void xcomp_update_texture(struct compwindow_data *data, int texture) {
 	data->last_texture = texture;
 	if(!data->w)
 	{
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		GLint const Swizzle[] = {GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA};
-		data->glxpixmap = 0;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		xcomp_reset_texture(data);
 		return;
 	}
     xcb_window_t req_win_id = data->w;

@@ -22,6 +22,7 @@ xcb_atom_t ATOM_TEXT;
 xcb_atom_t ATOM_COMPOUND_TEXT;
 xcb_atom_t ATOM_WM_NAME;
 xcb_atom_t ATOM_WM_CLASS;
+xcb_atom_t ATOM_WM_TRANSIENT_FOR;
 xcb_atom_t ATOM__NET_WM_NAME;
 xcb_atom_t ATOM__NET_SUPPORTING_WM_CHECK;
 xcb_atom_t ATOM__NET_CLIENT_LIST;
@@ -49,6 +50,7 @@ void xcomp_gather_atoms()
 	ATOM__NET_SUPPORTING_WM_CHECK =
 		get_atom("_NET_SUPPORTING_WM_CHECK");
 	ATOM__NET_CLIENT_LIST = get_atom("_NET_CLIENT_LIST");
+	ATOM_WM_TRANSIENT_FOR = get_atom("WM_TRANSIENT_FOR");
 }
 xcb_get_property_reply_t *xcomp_property_sync(xcb_window_t win, xcb_atom_t atom)
 {
@@ -85,10 +87,58 @@ int xcomp_window_atom_str(xcb_window_t win, xcb_atom_t atom, char *str, int maxl
 	return 0;
 }
 
+
+int xcomp_window_atom_compare_str(xcb_window_t win, xcb_atom_t atom, const char *str)
+{
+
+	int ret;
+	xcb_get_property_reply_t *cls =
+		xcomp_property_sync(win, atom);
+	if (!cls)
+		return 1;
+
+	// WM_CLASS is formatted differently from other strings, it's two null terminated strings.
+	// Since we want the first one, let's just let copy run strlen.
+	const char *val = (const char *)xcb_get_property_value(cls);
+	if(atom == ATOM_WM_CLASS)
+	{
+		const char *val2 = val + strlen(val) + 1;
+		if(!strcmp(val2, str))
+		{
+			free(cls);
+			return 0;
+		}
+	}
+	ret = strcmp(val,str);
+	free(cls);
+	return ret;
+}
+
+int xcomp_window_atom_compare_win(xcb_window_t win, xcb_atom_t atom, Window wnd)
+{
+
+	int ret;
+	xcb_get_property_reply_t *cls =
+		xcomp_property_sync(win, atom);
+	if (!cls)
+		return 1;
+
+	// WM_CLASS is formatted differently from other strings, it's two null terminated strings.
+	// Since we want the first one, let's just let copy run strlen.
+	ret =  (wnd != *(xcb_window_t*)xcb_get_property_value(cls));
+	free(cls);
+	return ret;
+}
+
 Window xcomp_find_top_level_window(xcb_atom_t atom, const char *value, int index)
 {
 	Window ret = 0;
 	int skip = 0;
+	Window wnd = atoi(value);
+	if(wnd)
+		printf("Integer window %x\n", wnd);
+	else
+		printf("String atom %s\n", value);
 
 	// EWMH top level window listing is not supported.
 	if (ATOM__NET_CLIENT_LIST == XCB_ATOM_NONE)
@@ -113,10 +163,8 @@ Window xcomp_find_top_level_window(xcb_atom_t atom, const char *value, int index
 		for (uint32_t i = 0; i < len; i++)
 		{
 			xcb_window_t win = ((xcb_window_t *)xcb_get_property_value(cl_list))[i];
-			char wvalue[256];
-//			if(win < min_id || max_id != 0 && win > max_id)
-//				continue;
-			if(!xcomp_window_atom_str(win, atom, wvalue, sizeof(wvalue)) && !strcmp(wvalue, value))
+
+			if((wnd && !xcomp_window_atom_compare_win(win, atom, wnd)) || !xcomp_window_atom_compare_str(win, atom, value) )
 			{
 				if(skip++ == index)
 				{
@@ -133,6 +181,41 @@ Window xcomp_find_top_level_window(xcb_atom_t atom, const char *value, int index
 
 	return ret;
 }
+
+Window xcomp_find_root_window(xcb_atom_t atom, Window atom_value, int index, int *x, int *y, int *width, int *height)
+{
+	Window *tree = NULL;
+	unsigned int ntree = 0;
+	Window root = gRoot, nwin = gRoot;
+	int i;
+	int iwin = 0;
+
+	XQueryTree(gDisplay, gRoot, &root, &nwin, &tree, &ntree);
+	if(!tree)
+		return 0;
+	nwin = 0;
+	for(i = 0; i < ntree; i++)
+	{
+		XWindowAttributes attrs;
+		XGetWindowAttributes(gDisplay, tree[i], &attrs);
+		if( attrs.map_state == IsViewable && !xcomp_window_atom_compare_win(tree[i], atom, atom_value))
+		{
+		printf("dump %x\n", tree[i]);
+		if(iwin++ == index)
+		{
+			nwin = tree[i];
+			*x = attrs.x;
+			*y = attrs.y;
+			*width = attrs.width;
+			*height = attrs.height;
+			break;
+		}
+		}
+	}
+	XFree(tree);
+	return nwin;
+}
+
 static int X11ErrorHandler(Display * d, XErrorEvent * e)
 {
 	char buffer[256];
@@ -144,6 +227,7 @@ static int X11ErrorHandler(Display * d, XErrorEvent * e)
 
 void xcomp_init_display(void)
 {
+	XInitThreads();
 	gDisplay = XOpenDisplay(NULL);
 	XSetErrorHandler(X11ErrorHandler);
 	gScreen = DefaultScreen(gDisplay);
@@ -191,6 +275,9 @@ void xcomp_init_display(void)
 	gFbConfig = configs[0];
 	xcomp_gather_atoms();
 }
+
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+
 int xcomp_register_window(struct compwindow_data *data, const char *atom, const char *value, int index)
 {
 	if(!atom[0])
@@ -225,6 +312,29 @@ int xcomp_register_window(struct compwindow_data *data, const char *atom, const 
     xcomp_window_atom_str(data->w, ATOM__NET_WM_NAME, data->title, 255 );
 	return (int)data->w;
 }
+
+int xcomp_register_popup(struct compwindow_data *data, int parent, int index)
+{
+//	pthread_mutex_lock(&m);
+	int i = 0;
+	Window w = parent;
+	while((i++ <= index) && w)
+		w = xcomp_find_root_window(ATOM_WM_TRANSIENT_FOR, w, 0, &data->x, &data->y, &data->width, &data->height);
+	if(w)
+	{
+	//	pthread_mutex_unlock(&m);
+		return data->w = w;
+	}
+//	w = parent, i = 0;
+	//while((i++ <= index) && w)
+	//	w = xcomp_find_root_window(ATOM_WM_TRANSIENT_FOR, w, w == parent, &data->x, &data->y, &data->width, &data->height);
+	printf("popupfb %x %d\n", parent, index);
+	data->w = xcomp_find_root_window(ATOM_WM_TRANSIENT_FOR, parent, index, &data->x, &data->y, &data->width, &data->height);
+	//pthread_mutex_unlock(&m);
+	return data->w;
+}
+
+
 static const int pixmap_config[] = {GLX_BIND_TO_TEXTURE_RGBA_EXT,
                              True,
                              GLX_DRAWABLE_TYPE,
@@ -296,3 +406,16 @@ void xcomp_update_texture(struct compwindow_data *data, int texture) {
 	 
 	BindTexImageEXT(gDisplay, data->glxpixmap, GLX_FRONT_LEFT_EXT, NULL);
 }
+
+#if 0
+
+int main(int argc, char **argv)
+{
+	struct compwindow_data data;
+	xcomp_init_display();
+	printf("%x\n",xcomp_register_popup(&data, atoi(argv[1]), 0));
+	printf("%x\n",xcomp_register_popup(&data, atoi(argv[1]), 1));
+	printf("%x\n",xcomp_register_popup(&data, atoi(argv[1]), 2));
+
+}
+#endif

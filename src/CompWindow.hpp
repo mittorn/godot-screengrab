@@ -23,11 +23,13 @@ public:
 		godot::register_method("window_update_mouse", &CompWindow::window_update_mouse);
 		godot::register_method("set_key_state", &CompWindow::set_key_state);
 		godot::register_method("get_window_title", &CompWindow::get_window_title);
+		godot::register_method("register_popup", &CompWindow::register_popup);
 		xcomp_init_display();
 	}
 
 	void _init() {}
 	int register_window(godot::String atom,godot::String value, int index) { return xcomp_register_window( &data, atom.utf8().get_data(),value.utf8().get_data(), index);}
+	int register_popup(int parent, int index) { return xcomp_register_popup( &data, parent, index);}
 
 	int get_w() const { return data.width;}
 	int get_h() const { return data.height;}

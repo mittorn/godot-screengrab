@@ -2,11 +2,7 @@
 #define SIMPLE_H
 
 #include <Godot.hpp>
-
-#include <Input.hpp>
 #include <Reference.hpp>
-#include <Sprite.hpp>
-#include <Control.hpp>
 
 class ScreenGrab : public godot::Reference {
 	GODOT_CLASS(ScreenGrab, godot::Reference)

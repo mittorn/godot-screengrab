@@ -51,10 +51,13 @@ if platform == "osx":
         env.Append(LINKFLAGS=["-arch", "x86_64"])
 elif platform == "linux":
     if env["target"] in ("debug", "d"):
-        env.Append(CCFLAGS=["-fPIC", "-g3", "-Og"] + "-flto -march=znver1 -mtune=znver1 -mfma -mavx2 -mavx -msse4a -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -fipa-pta -fdevirtualize-at-ltrans -fno-plt".split(' '))
+        env.Append(CCFLAGS=["-fPIC", "-g3", "-Og"])
     else:
-        env.Append(CCFLAGS=["-fPIC", "-g", "-Os"] + "-flto -march=znver1 -mtune=znver1 -mfma -mavx2 -mavx -msse4a -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -fipa-pta -fdevirtualize-at-ltrans -fno-plt".split(' '))
-    env.Append(LINKFLAGS=["-lX11", "-lGL", "-lXtst", "-lxcb", "-lxcb-composite", "-lX11-xcb", "-Wl,--no-undefined", "-Wl,--as-needed"] + "-flto -march=znver1 -mtune=znver1 -mfma -mavx2 -mavx -msse4a -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -fipa-pta -fdevirtualize-at-ltrans -fno-plt".split(' '))
+        env.Append(CCFLAGS=["-fPIC", "-g", "-Os"])
+    env.Append(LINKFLAGS=["-lX11", "-lGL", "-lXtst", "-lxcb", "-lxcb-composite", "-lX11-xcb", "-Wl,--no-undefined", "-Wl,--as-needed"])
+    env.Append(CCFLAGS=ARGUMENTS.get('COMMON_FLAGS', ''))
+    env.Append(LINKFLAGS=ARGUMENTS.get('COMMON_FLAGS', ''))
+
 elif platform == "windows":
     # This makes sure to keep the session environment variables
     # on Windows, so that you can run scons in a VS 2017 prompt

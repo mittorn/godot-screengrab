@@ -43,6 +43,7 @@ static void InitX11()
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdio.h>
 #define blog(x,...) printf(__VA_ARGS__)
 #define MSG printf
 static int fd;

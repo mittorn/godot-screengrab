@@ -54,7 +54,7 @@ elif platform == "linux":
         env.Append(CCFLAGS=["-fPIC", "-g3", "-Og"])
     else:
         env.Append(CCFLAGS=["-fPIC", "-g", "-Os"])
-    env.Append(LINKFLAGS=["-lX11", "-lGL", "-lXtst", "-lxcb", "-lxcb-composite", "-lX11-xcb", "-Wl,--no-undefined", "-Wl,--as-needed"])
+    env.Append(LIBS=["X11", "GL", "Xtst", "xcb", "xcb-composite", "X11-xcb")
     env.Append(CCFLAGS=ARGUMENTS.get('COMMON_FLAGS', ''))
     env.Append(LINKFLAGS=ARGUMENTS.get('COMMON_FLAGS', ''))
 

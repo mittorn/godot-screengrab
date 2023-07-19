@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -qqq build-essential pkg-config libdrm-dev
+          sudo apt-get install -qqq build-essential pkg-config libdrm-dev libxtst-dev libxcomposite-dev
           python -m pip install scons
 
       - name: Build godot-cpp
@@ -27,10 +27,14 @@ jobs:
           cd $GITHUB_WORKSPACE/godot-cpp
           scons target=release platform=linux generate_bindings=yes -j $(nproc) COMMON_FLAGS="-Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
 
-      - name: Build godot-cpp
+      - name: Build godot-screengrab
         run: |
           cd $GITHUB_WORKSPACE
           scons target=release platform=linux -j $(nproc) COMMON_FLAGS="-Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
+
+      - name: Build drmsend
+        run: |
+          cd $GITHUB_WORKSPACE
           gcc drmsend.c -o drmsend `pkg-config --cflags --libs libdrm` -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden -s
 
       - name: Upload artifact

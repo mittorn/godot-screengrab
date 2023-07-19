@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -qqq build-essential pkg-config libdrm-dev libxtst-dev libxcomposite-dev libglvnd-dev libxcb-composite0-dev libxcb1-dev
+          sudo apt-get install -qqq build-essential pkg-config libdrm-dev libxtst-dev libxcomposite-dev libglvnd-dev libxcb-composite0-dev libxcb1-dev libx11-xcb-dev
           python -m pip install scons
 
       - name: Build godot-cpp

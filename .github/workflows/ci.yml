@@ -25,17 +25,23 @@ jobs:
       - name: Build godot-cpp
         run: |
           cd $GITHUB_WORKSPACE/godot-cpp
-          scons target=release platform=linux generate_bindings=yes -j $(nproc) COMMON_FLAGS="-Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
+          scons target=release platform=linux generate_bindings=yes -j $(nproc) COMMON_FLAGS="-g -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
 
       - name: Build godot-screengrab
         run: |
           cd $GITHUB_WORKSPACE
-          scons target=release platform=linux -j $(nproc) COMMON_FLAGS="-Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
+          scons target=release platform=linux -j $(nproc) COMMON_FLAGS="-g -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
+          objcopy --only-keep-debug project/gdnative/linux/libscreengrab.so project/gdnative/linux/libscreengrab.so.debug
+          strip -s project/gdnative/linux/libscreengrab.so
+          objcopy --add-gnu-debuglink=libscreengrab.so.debug project/gdnative/linux/libscreengrab.so
 
       - name: Build drmsend
         run: |
           cd $GITHUB_WORKSPACE
-          gcc drmsend.c -o drmsend `pkg-config --cflags --libs libdrm` -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden -s
+          gcc drmsend.c -o drmsend `pkg-config --cflags --libs libdrm` -g -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden
+          objcopy --only-keep-debug drmsend drmsend.debug
+          strip -s drmsend
+          objcopy --add-gnu-debuglink=drmsend.debug drmsend
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2

@@ -51,8 +51,10 @@ jobs:
           name: screengrab-shared
           path: |
             project/gdnative/linux/libscreengrab.so
+            project/gdnative/linux/libscreengrab.so.debug
             project/gdnative/compwindow.gdns
             project/gdnative/screengrab.gdnlib
             project/gdnative/screengrab.gdns
             drmsend
+            drmsend.debug
           if-no-files-found: error

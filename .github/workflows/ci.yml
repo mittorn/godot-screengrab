@@ -33,7 +33,9 @@ jobs:
           scons target=release platform=linux -j $(nproc) COMMON_FLAGS="-g -Os -Wl,-Os -Wl,--gc-sections -ffunction-sections -fno-stack-protector -U_FORTIFY_SOURCE -flto -fipa-pta -fdevirtualize-at-ltrans -msse4 -mssse3 -msse3 -msse2 -msse -mfpmath=both -pipe -fno-plt -static-libgcc -fvisibility=hidden"
           objcopy --only-keep-debug project/gdnative/linux/libscreengrab.so project/gdnative/linux/libscreengrab.so.debug
           strip -s project/gdnative/linux/libscreengrab.so
-          objcopy --add-gnu-debuglink=libscreengrab.so.debug project/gdnative/linux/libscreengrab.so
+          cd project/gdnative/linux/
+          objcopy --add-gnu-debuglink=libscreengrab.so.debug libscreengrab.so
+          cd $GITHUB_WORKSPACE
 
       - name: Build drmsend
         run: |
